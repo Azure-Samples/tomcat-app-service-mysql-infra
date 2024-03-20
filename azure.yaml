@@ -13,9 +13,7 @@ hooks:
   postprovision:
     posix: 
       shell: sh
-      run: echo '\n\nApp Service app has the following connection strings:\n' && echo "$CONNECTION_SETTINGS" | jq -r '.[]' | sed 's/\(.*\)/\t- \1/' && echo "\nSee the settings in the portal:\033[1;36m $WEB_APP_CONFIG" 
-      # To run in Azure Cloud Shell (bash), use the following run command instead:
-      # run: echo $'\n\nApp Service app has the following connection strings:\n' && echo "$CONNECTION_SETTINGS" | jq -r '.[]' | sed 's/\(.*\)/\t- \1/' && echo -e $"\nSee the settings in the portal:\033[1;36m $WEB_APP_CONFIG" 
+      run: printf '\nApp Service app has the following connection strings:\n' && printf "$CONNECTION_SETTINGS" | jq -r '.[]' | sed 's/\(.*\)/\t- \1/' && printf "\nSee the settings in the portal:\033[1;36m $WEB_APP_CONFIG\n" 
       interactive: true
       continueOnError: true
     windows:
@@ -26,9 +24,7 @@ hooks:
   postdeploy:
     posix: 
       shell: sh
-      run: echo "\n\nOpen SSH session to App Service container at:\033[1;36m $WEB_APP_SSH\033[0m" && echo "Stream App Service logs at:\033[1;36m $WEB_APP_LOG_STREAM"
-      # To run in Azure Cloud Shell (bash), use the following run command instead:
-      # run: echo -e $"\n\nOpen SSH session to App Service container at:\033[1;36m $WEB_APP_SSH\033[0m" && echo -e $"Stream App Service logs at:\033[1;36m $WEB_APP_LOG_STREAM"
+      run: printf "Open SSH session to App Service container at:\033[1;36m $WEB_APP_SSH\033[0m\nStream App Service logs at:\033[1;36m $WEB_APP_LOG_STREAM\n"
       interactive: true
       continueOnError: true
     windows:

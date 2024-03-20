@@ -203,9 +203,9 @@ resource redisCache 'Microsoft.Cache/Redis@2023-08-01' = {
   location: location
   properties: {
     sku: {
-      name: 'Standard'
+      name: 'Basic'
       family: 'C'
-      capacity: 1
+      capacity: 0
     }
     redisConfiguration: {}
     enableNonSslPort: false
