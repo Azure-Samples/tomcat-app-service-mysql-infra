@@ -7,7 +7,7 @@ param databasePassword string
 
 var appName = '${name}-${resourceToken}'
 
-// Key Vault for saving randomly generated password
+// The Key Vault is for saving the randomly generated password
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: '${take(replace(appName, '-', ''), 17)}-vault'
   location: location
@@ -130,6 +130,7 @@ resource privateDnsZoneLinkCache 'Microsoft.Network/privateDnsZones/virtualNetwo
   }
 }
 
+// The MySQL server is configured to be the minimum pricing tier
 resource dbserver 'Microsoft.DBforMySQL/flexibleServers@2023-06-30' = {
   location: location
   name: '${appName}-mysql-server'
@@ -138,7 +139,9 @@ resource dbserver 'Microsoft.DBforMySQL/flexibleServers@2023-06-30' = {
     administratorLogin: 'mysqladmin'
     administratorLoginPassword: databasePassword
     storage: {
-      storageSizeGB: 128
+      autoGrow: 'Enabled'
+      iops: 700
+      storageSizeGB: 20
     }
     backup: {
       backupRetentionDays: 7
@@ -151,8 +154,8 @@ resource dbserver 'Microsoft.DBforMySQL/flexibleServers@2023-06-30' = {
     }
   }
   sku: {
-    name: 'Standard_D2ds_v4'
-    tier: 'GeneralPurpose'
+    name: 'Standard_B1ms'
+    tier: 'Burstable'
   }
   dependsOn: [
     privateDnsZoneLinkDB
@@ -196,8 +199,7 @@ resource cachePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-04-01' = 
   }
 }
 
-
-
+// The Redis cache is configured to the minimum pricing tier
 resource redisCache 'Microsoft.Cache/Redis@2023-08-01' = {
   name: '${appName}-cache'
   location: location
@@ -214,6 +216,7 @@ resource redisCache 'Microsoft.Cache/Redis@2023-08-01' = {
   }
 }
 
+// The App Service plan is configured to the B1 pricing tier
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: '${appName}-plan'
   location: location
@@ -229,17 +232,18 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
 resource web 'Microsoft.Web/sites@2022-09-01' = {
   name: appName
   location: location
-  tags: {'azd-service-name': 'web'}
+  tags: {'azd-service-name': 'web'} // Needed by AZD
   properties: {
     siteConfig: {
-      linuxFxVersion: 'TOMCAT|10.0-java17'
-      vnetRouteAllEnabled: true
+      linuxFxVersion: 'TOMCAT|10.1-java17' // Set to Java 17, Tomcat 10.1
+      vnetRouteAllEnabled: true // Route outbound traffic to the VNET
       ftpsState: 'Disabled'
     }
     serverFarmId: appServicePlan.id
     httpsOnly: true
   }
 
+  // Enable App Service native logs
   resource logs 'config' = {
     name: 'logs'
     properties: {
@@ -264,6 +268,7 @@ resource web 'Microsoft.Web/sites@2022-09-01' = {
     }
   }
 
+  // Enable VNET integration
   resource webappVnetConfig 'networkConfig' = {
     name: 'virtualNetwork'
     properties: {
@@ -274,6 +279,7 @@ resource web 'Microsoft.Web/sites@2022-09-01' = {
   dependsOn: [virtualNetwork]
 }
 
+// Connector to the MySQL database, which generates the connection string for the App Service app
 resource dbConnector 'Microsoft.ServiceLinker/linkers@2022-05-01' = {
   scope: web
   name: 'defaultConnector'
@@ -295,6 +301,7 @@ resource dbConnector 'Microsoft.ServiceLinker/linkers@2022-05-01' = {
   }
 }
 
+// Connector to the Redis cache, which generates the connection string for the App Service app
 resource cacheConnector 'Microsoft.ServiceLinker/linkers@2022-05-01' = {
   scope: web
   name: 'RedisConnector'
@@ -327,6 +334,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2020-03
   })
 }
 
+// Enable log shipping from the App Service app to the Log Analytics workspace.
 resource webdiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'AllLogs'
   scope: web
