@@ -41,4 +41,3 @@ output CONNECTION_SETTINGS array = resources.outputs.CONNECTION_SETTINGS
 output WEB_APP_LOG_STREAM string = resources.outputs.WEB_APP_LOG_STREAM
 output WEB_APP_SSH string = resources.outputs.WEB_APP_SSH
 output WEB_APP_CONFIG string = resources.outputs.WEB_APP_CONFIG
-output AZURE_KEY_VAULT_NAME string = resources.outputs.AZURE_KEY_VAULT_NAME
