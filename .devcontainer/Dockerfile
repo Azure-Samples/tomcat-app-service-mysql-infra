@@ -1,8 +1,6 @@
-FROM mcr.microsoft.com/devcontainers/java:1-17-bullseye
+FROM mcr.microsoft.com/devcontainers/java:25-bookworm
 
-# Install MySQL command-line client -- see https://dev.mysql.com/doc/refman/8.0/en/mysql.html
-RUN apt-get update && apt-get install -y gnupg lsb-release inetutils-tools \
-  && wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb \
-  && DEBIAN_FRONTEND=noninteractive dpkg -i mysql-apt-config_0.8.29-1_all.deb \
-  && apt-get update \
-  && apt install -y mysql-client
+# Install a MySQL-compatible command-line client from Debian repos to avoid external GPG key issues.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends inetutils-tools default-mysql-client \
+  && rm -rf /var/lib/apt/lists/*
