@@ -410,12 +410,12 @@ resource dbConnector 'Microsoft.ServiceLinker/linkers@2024-04-01' = {
   }
 }
 
-// Service Connector from the app to the cache, which generates an app setting for the ASP.NET Core application
+// Service Connector from the app to the cache, which generates a Jedis connection string for the Java application
 resource cacheConnector 'Microsoft.ServiceLinker/linkers@2024-04-01' = {
   scope: web
   name: 'RedisConnector'
   properties: {
-    clientType: 'dotnet'
+    clientType: 'java'
     targetService: {
       type: 'AzureResource'
       id: redisCache::redisDatabase.id
